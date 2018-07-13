@@ -3,9 +3,9 @@ title: "BMU Fish Catch Data"
 author: "Erika Gavenus"
 date: "7/13/2018"
 output:
-  word_document: default
-  pdf_document: default
   html_document: default
+  pdf_document: default
+  word_document: default
 ---
 
 # Libraries
