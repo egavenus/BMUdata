@@ -1,0 +1,329 @@
+---
+title: "BMU Fish Catch Data"
+author: "Erika Gavenus"
+date: "7/13/2018"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+# Libraries
+```{r libraries, message=FALSE, warning=FALSE}
+  library(leaflet)
+  library(dplyr)
+  library(tidyr)
+  library(ggplot2)
+  library(DT)
+  library(readxl)
+  library(lubridate)
+```
+
+# Functions
+``` {r functions}
+drop.entry <- function(old.df, var, x) {
+  
+  new.df <- old.df[old.df[, var] != x, ]
+  return(new.df)
+}
+
+keep.entry <- function(old.df, var, x) {
+  
+  new.df <- old.df[old.df[, var] == x, ]
+  return(new.df)
+}
+```
+
+# Setting working directory
+```{r directory}
+setwd("~/Box Sync/BMU Data")
+```
+# Importing data
+```{r data import, message=FALSE, warning=FALSE}
+Kitenyi.2014 <- read_excel("E-01_Kitenyi Beach_2014.xlsx")
+Kitenyi.2015 <- read_excel("E-01_Kitenyi Beach_2015.xlsx")
+Kitawi.2014 <- read_excel("E-02_Kitawi Beach_2014.xlsx")
+Kitawi.2015 <- read_excel("E-02_Kitawi Beach_2015.xlsx")
+Makira.2014 <- read_excel("E-03_Makira Beach_2014.xlsx")
+Makira.2015 <- read_excel("E-03_Makira Beach_2015.xlsx")
+Sena.2015 <- read_excel("E-04_Sena Beach_2015.xlsx")
+Sena.2014 <- read_excel("E-04_Sena Beach_2014.xlsx")
+Takawiri.2014<- read_excel("E-06_Takawiri Beach_2014.xlsx")
+Takawiri.2015 <- read_excel("E-06_Takawiri Beach_2015.xlsx")
+Mrongo.2014 <- read_excel("N-07_Mrongo Beach_2014.xlsx")
+Mrongo.2015 <- read_excel("N-07_Mrongo Beach_2015.xlsx")
+Likungu.2014 <- read_excel("N-08_Likungu Beach_2014.xlsx")
+Likungu.2015 <- read_excel("N-08_Likungu Beach_2015.xlsx")
+Yokia.2014<-read_excel("N-09_Yokia Beach_2014.xlsx")
+Yokia.2014.omena <- read_excel("N-09_Yokia Beach _Omena_2014.xlsx")
+Yokia.2015 <- read_excel("N-09_Yokia Beach_2015.xlsx")
+Konyahero.2014 <- read_excel("N-10_Konyahero Beach_2014.xlsx")
+Masisi.2014.omena <- read_excel("N-10_Masisi Beach _Omena_2014.xlsx")
+Masisi.2014 <- read_excel("N-10_Masisi Beach_2014.xlsx")
+Masisi.2015 <- read_excel("N-10_Masisi Beach_2015.xlsx")
+Masisi.2014.ngege <- read_excel("N-10_Masisi Beach_Ngege_2014.xlsx")
+Masisi.2014.ochangaa <- read_excel("N-10_Masisi Beach_Ochangaa_2014.xlsx")
+Nyakweri.2014 <- read_excel("N-11_Nyakweri Beach_2014.xlsx")
+Nyakweri.2015 <- read_excel("N-11_Nyakweri Beach_2015.xlsx")
+Ugina.2014 <- read_excel("S-17_Ugina Beach_2014.xlsx")
+Ugina.2015 <- read_excel("S-17_Ugina Beach_2015.xlsx")
+Mauta.2014.omena <- read_excel("S-18_Mauta Beach _Omena_2014.xlsx")
+Mauta.2014 <- read_excel("S-18_Mauta Beach_2014.xlsx")
+Kasarani.2014 <- read_excel("S-19_Kasarani Beach_2014.xlsx")
+Kasarani.2015 <- read_excel("S-19_Kasarani Beach_2015.xlsx")
+Kiwari.2014 <- read_excel("W-12_Kiwari Beach_2014.xlsx")
+Kiwari.2015 <- read_excel("W-12_Kiwari Beach_2015.xlsx")
+Wakula.2014 <- read_excel("W-13_Wakula Beach_2014.xlsx")
+Nyawalongo.2014 <- read_excel("W-14_Nyawalongo Beach_2014.xlsx")
+Nyawalongo.2015 <- read_excel("W-14_Nyawalongo Beach_2015.xlsx")
+Nyawalongo.2014.omena <- read_excel("W-14_Nyawalongo Beach_Omena_2014.xlsx")
+Mulundu.2014 <- read_excel("W-15_Mulundu Beach_2014.xlsx")
+Mulundu.2014.omena <- read_excel("W-15_Mulundu Beach_Omena_2014.xlsx")
+Tiko.2014 <- read_excel("W-16_Tiko Beach_2014.xlsx")
+```
+
+# Cleaning column names
+``` {r column names}
+Sena.2014.clipped<-subset(Sena.2014, select = -c(Small_Wt, Med_Wt, Large_Wt))
+Sena.2014<-Sena.2014.clipped
+Wakula.2014$Total<-NA
+Wakula.2014$Note<-NA
+
+colnames(Masisi.2014.omena)[colnames(Masisi.2014.omena) == 'Troughs'] <- 'Weight'
+colnames(Mauta.2014.omena)[colnames(Mauta.2014.omena) == 'Troughs'] <- 'Weight'
+colnames(Mulundu.2014.omena)[colnames(Mulundu.2014.omena) == 'Troughs'] <- 'Weight'
+colnames(Nyawalongo.2014.omena)[colnames(Nyawalongo.2014.omena) == 'Troughs'] <- 'Weight'
+colnames(Yokia.2014.omena)[colnames(Yokia.2014.omena) == 'Troughs'] <- 'Weight'
+
+```
+
+# Adding columns for BMU, region, fish species
+```{r adding columns}
+Kasarani.2014$bmu<-"Kasarani"
+Kasarani.2014$fish<-"mbuta"
+Kasarani.2014$region<-"S"
+
+Kasarani.2015$bmu<-"Kasarani"
+Kasarani.2015$fish<-"mbuta"
+Kasarani.2015$region<-"S"
+
+Kitawi.2014$bmu<-"Kitawi"
+Kitawi.2014$fish<-"mbuta"
+Kitawi.2014$region<-"E"
+
+Kitawi.2015$bmu<-"Kitawi"
+Kitawi.2015$fish<-"mbuta"
+Kitawi.2015$region<-"E"
+
+Kitenyi.2014$bmu<-"Kitenyi"
+Kitenyi.2014$fish<-"mbuta"
+Kitenyi.2014$region<-"E"
+
+Kitenyi.2015$bmu<-"Kitenyi"
+Kitenyi.2015$fish<-"mbuta"
+Kitenyi.2015$region<-"E"
+
+Kiwari.2014$bmu<-"Kiwari"
+Kiwari.2014$fish<-"mbuta"
+Kiwari.2014$region<-"W"
+
+Kiwari.2015$bmu<-"Kiwari"
+Kiwari.2015$fish<-"mbuta"
+Kiwari.2015$region<-"W"
+
+Konyahero.2014$bmu<-"Konyahero"
+Konyahero.2014$fish<-"mbuta"
+Konyahero.2014$region<-"N"
+
+Likungu.2014$bmu<-"Likungu"
+Likungu.2014$fish<-"mbuta"
+Likungu.2014$region<-"N"
+
+Likungu.2015$bmu<-"Likungu"
+Likungu.2015$fish<-"mbuta"
+Likungu.2015$region<-"N"
+
+Makira.2014$bmu<-"Makira"
+Makira.2014$fish<-"mbuta"
+Makira.2014$region<-"E"
+
+Makira.2015$bmu<-"Makira"
+Makira.2015$fish<-"mbuta"
+Makira.2015$region<-"E"
+
+Masisi.2014$bmu<-"Masisi"
+Masisi.2014$fish<-"mbuta"
+Masisi.2014$region<-"N"
+
+
+Masisi.2014.ochangaa$bmu<-"Masisi"
+Masisi.2014.ochangaa$fish<-"ochangaa"
+Masisi.2014.ochangaa$region<-"N"
+
+Masisi.2014.ngege$bmu<-"Masisi"
+Masisi.2014.ngege$fish<-"ngege"
+Masisi.2014.ngege$region<-"N"
+
+Masisi.2014.omena$bmu<-"Masisi"
+Masisi.2014.omena$fish<-"omena"
+Masisi.2014.omena$region<-"N"
+
+Masisi.2015$bmu<-"Masisi"
+Masisi.2015$fish<-"mbuta"
+Masisi.2015$region<-"N"
+
+Mauta.2014$bmu<-"Mauta"
+Mauta.2014$fish<-"mbuta"
+Mauta.2014$region<-"S"
+
+Mauta.2014.omena$bmu<-"Mauta"
+Mauta.2014.omena$fish<-"omena"
+Mauta.2014.omena$region<-"S"
+
+Mrongo.2014$bmu<-"Mrongo"
+Mrongo.2014$fish<-"mbuta"
+Mrongo.2014$region<-"N"
+
+Mrongo.2015$bmu<-"Mrongo"
+Mrongo.2015$fish<-"mbuta"
+Mrongo.2015$region<-"N"
+
+Mulundu.2014$bmu<-"Mulundu"
+Mulundu.2014$fish<-"mbuta"
+Mulundu.2014$region<-"W"
+
+Mulundu.2014.omena$bmu<-"Mulundu"
+Mulundu.2014.omena$fish<-"omena"
+Mulundu.2014.omena$region<-"W"
+
+Nyakweri.2014$bmu<-"Nyakweri"
+Nyakweri.2014$fish<-"mbuta"
+Nyakweri.2014$region<-"N"
+
+Nyakweri.2015$bmu<-"Nyakweri"
+Nyakweri.2015$fish<-"mbuta"
+Nyakweri.2015$region<-"N"
+
+Nyawalongo.2014$bmu<-"Nyawalongo"
+Nyawalongo.2014$fish<-"mbuta"
+Nyawalongo.2014$region<-"W"
+
+Nyawalongo.2014.omena$bmu<-"Nyawalongo"
+Nyawalongo.2014.omena$fish<-"omena"
+Nyawalongo.2014.omena$region<-"W"
+
+Nyawalongo.2015$bmu<-"Nyawalongo"
+Nyawalongo.2015$fish<-"mbuta"
+Nyawalongo.2015$region<-"W"
+
+Sena.2014$bmu<-"Sena"
+Sena.2014$fish<-"mbuta"
+Sena.2014$region<-"E"
+
+Sena.2015$bmu<-"Sena"
+Sena.2015$fish<-"mbuta"
+Sena.2015$region<-"E"
+
+Takawiri.2014$bmu<-"Takawiri"
+Takawiri.2014$fish<-"mbuta"
+Takawiri.2014$region<-"E"
+
+Takawiri.2015$bmu<-"Takawiri"
+Takawiri.2015$fish<-"mbuta"
+Takawiri.2015$region<-"E"
+
+Tiko.2014$bmu<-"Tiko"
+Tiko.2014$fish<-"mbuta"
+Tiko.2014$region<-"W"
+
+Ugina.2014$bmu<-"Ugina"
+Ugina.2014$fish<-"mbuta"
+Ugina.2014$region<-"S"
+
+Ugina.2015$bmu<-"Ugina"
+Ugina.2015$fish<-"mbuta"
+Ugina.2015$region<-"S"
+
+Wakula.2014$bmu<-"Wakula"
+Wakula.2014$fish<-"mbuta"
+Wakula.2014$region<-"W"
+
+Yokia.2014$bmu<-"Yokia"
+Yokia.2014$fish<-"mbuta"
+Yokia.2014$region<-"N"
+
+Yokia.2014.omena$bmu<-"Yokia"
+Yokia.2014.omena$fish<-"omena"
+Yokia.2014.omena$region<-"N"
+
+Yokia.2015$bmu<-"Yokia"
+Yokia.2015$fish<-"mbuta"
+Yokia.2015$region<-"N"
+
+```
+
+# Compiling data into single dataframe
+``` {r binding}
+catchdata.full<- rbind(Kasarani.2014, Kasarani.2015, Kitawi.2014, Kitawi.2015, Kitenyi.2014, Kitenyi.2015, Kiwari.2014, Kiwari.2015, Konyahero.2014, Likungu.2014, Likungu.2015, Makira.2014, Makira.2015, Masisi.2014, Masisi.2014.ngege, Masisi.2014.ochangaa, Masisi.2014.omena, Masisi.2015, Mauta.2014, Mauta.2014.omena, Mrongo.2014, Mrongo.2015, Mulundu.2014, Mulundu.2014.omena, Nyakweri.2014, Nyakweri.2015, Nyawalongo.2014, Nyawalongo.2014.omena, Nyawalongo.2015, Sena.2014, Sena.2015, Takawiri.2014, Takawiri.2015, Tiko.2014, Ugina.2014, Ugina.2015, Wakula.2014, Yokia.2014, Yokia.2014.omena, Yokia.2015)
+```
+
+# Limiting to mbuta data
+``` {r mbuta.data}
+mbutacatch<-keep.entry(catchdata.full, 'fish', 'mbuta')
+```
+
+# Cleaning date errors
+``` {r date errors}
+mbutacatch$Date<-as_date(mbutacatch$Date)
+mbutacatch$Date[which (mbutacatch$Date=="2104-06-02")]<- "2014-06-02"
+mbutacatch$Date[which (mbutacatch$Date=="2104-01-12")]<- "2014-01-12"
+mbutacatch$Date[which (mbutacatch$Date=="2103-10-22")]<- "2013-10-22" 
+
+```
+
+# Summarizing mbuta catch and rates by date and beach
+``` {r totalcatch.date.beach}
+beach.totals <- mbutacatch %>% 
+    group_by(Date, bmu) %>% 
+    summarise(daily.total=sum(Weight), rate.avg=mean(Rate))
+```
+
+# Graphing daily mbuta catch by bmu
+``` {r bmu daily catch graph}
+daily.catch.bmu = ggplot(data=beach.totals, aes(x=Date, y=daily.total, color=bmu, fill=bmu)) +  
+    geom_line () +
+    theme_bw() + theme() + labs(x="Date", y="Total Catch (kg)") + ggtitle("Daily Catch of Mbuta (kg) by BMU")
+print(daily.catch.bmu)
+```
+
+# Summarizing mbuta catch and rates by date and region
+``` {r totalcatch.date.region}
+region.totals <- mbutacatch %>% 
+    group_by(Date, region) %>% 
+    summarise(daily.total=sum(Weight), rate.avg=mean(Rate))
+```
+
+# Graphing daily mbuta catch by region
+``` {r regional daily catch graph}
+daily.catch.region = ggplot(data=region.totals, aes(x=Date, y=daily.total, color=region, fill=region)) +  
+    geom_line () +
+    theme_bw() + theme() + labs(x="Date", y="Total Catch (kg)") + ggtitle("Daily Catch of Mbuta (kg) by Region")
+print(daily.catch.region)
+```
+
+# Summarizing mbuta catch and rates by date
+``` {r totalcatch.date}
+totalcatch <- mbutacatch %>% 
+    group_by(Date) %>% 
+    summarise(daily.total=sum(Weight), rate.avg=mean(Rate))
+```
+
+# Graphing daily mbuta catch
+``` {r daily catch graph}
+daily.catch = ggplot(data=totalcatch, aes(x=Date, y=daily.total)) +  
+    geom_line () +
+    theme_bw() + theme() + labs(x="Date", y="Total Catch (kg)") + ggtitle("Daily Catch of Mbuta (kg)")
+print(daily.catch)
+```
+
+# Daily catch by number of beaches reporting
